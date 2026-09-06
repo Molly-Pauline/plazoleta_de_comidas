@@ -85,6 +85,7 @@ La pertenencia se verifica comparando `X-User-Id` con `Restaurante.idPropietario
 
 - `PlatoServiceTest`: creacion, precio, restaurante inexistente/ajeno, rol, activo por defecto y modificacion restringida.
 - `PlatoControllerTest`: contratos de aplicacion, autenticacion y preservacion de campos.
+- `PlatoHttpServerTest`: flujo HTTP completo de HU 4 y preservacion de los campos restringidos.
 - `RestauranteHttpServerTest`: regresion del endpoint existente.
 
 La persistencia actual sigue el patron en memoria utilizado por el proyecto. `RestauranteRepository` y `PlatoRepository` asignan identificadores y encapsulan el almacenamiento para permitir sustituirlo por Supabase sin mover las reglas de negocio.
