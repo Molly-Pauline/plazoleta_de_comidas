@@ -11,6 +11,10 @@ public class RestauranteController {
     private final UsuarioValidationPort usuarioValidationPort = idPropietario -> idPropietario != null && idPropietario > 0;
     private final RestauranteService service = new RestauranteService(repository, usuarioValidationPort);
 
+    public RestauranteRepository getRepository() {
+        return repository;
+    }
+
     public String crearRestaurante(Restaurante restaurante, RolAutenticado usuarioAutenticado) {
         if (usuarioAutenticado == null || usuarioAutenticado.getRol() == null) {
             throw new SecurityException("Acceso denegado: no autenticado");

@@ -1,0 +1,35 @@
+{
+  "name": "Platos y Menu - Sprint 1",
+  "requests": [
+    {
+      "name": "Crear plato",
+      "method": "POST",
+      "path": "/platos",
+      "headers": {
+        "X-Rol": "PROPIETARIO",
+        "X-User-Id": "10"
+      },
+      "body": {
+        "nombre": "Hamburguesa clasica",
+        "precio": 25000,
+        "descripcion": "Con queso",
+        "urlImagen": "https://example.com/burger.png",
+        "categoria": "Hamburguesas",
+        "idRestaurante": 1
+      }
+    },
+    {
+      "name": "Modificar plato",
+      "method": "PUT",
+      "path": "/platos/1",
+      "headers": {
+        "X-Rol": "PROPIETARIO",
+        "X-User-Id": "10"
+      },
+      "body": {
+        "precio": 30000,
+        "descripcion": "Con queso y tocineta"
+      }
+    }
+  ]
+}

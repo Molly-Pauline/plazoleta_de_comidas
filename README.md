@@ -87,3 +87,11 @@ SUPABASE_SERVICE_ROLE_KEY=<clave-de-servidor>
 ```
 
 `SUPABASE_SERVICE_ROLE_KEY` solo debe configurarse en el servidor. No debe enviarse al frontend ni confirmarse en el repositorio.
+
+## HU 3 y HU 4: Platos y menu
+
+La implementacion de creacion y modificacion segura de platos esta documentada en
+[`docs/platos-menu.md`](docs/platos-menu.md). Incluye los contratos HTTP, reglas de
+validacion, autorizacion por pertenencia, matriz de campos modificables y evidencia
+automatizada. La coleccion de solicitudes se encuentra en
+[`docs/platos-menu-api.json`](docs/platos-menu-api.json).
