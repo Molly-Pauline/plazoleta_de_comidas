@@ -9,8 +9,16 @@ import controller.PlatoController;
 import controller.PlatoRequestDTO;
 import controller.PlatoResponseDTO;
 import controller.PlatoUpdateRequestDTO;
+import controller.PropietarioController;
+import controller.PropietarioRequestDTO;
+import controller.PropietarioResponseDTO;
+import service.PropietarioService;
 import repository.PlatoRepository;
 import service.RolAutenticado;
+import config.FabricaDeSeguridad;
+import seguridad.aplicacion.ServicioDeAutenticacion;
+import seguridad.dominio.CredencialesInvalidasException;
+import seguridad.infraestructura.AutenticacionHandler;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -25,16 +33,34 @@ public class RestauranteHttpServer {
     private final int port;
     private final RestauranteController controller;
     private final PlatoController platoController;
+    // HU-05: sin esto el servidor confiaba en el encabezado X-Rol que enviaba el cliente.
+    private final ServicioDeAutenticacion servicioDeAutenticacion;
+    private final PropietarioController propietarioController;
     private HttpServer server;
 
     public RestauranteHttpServer(int port, RestauranteController controller) {
+        this(port, controller, FabricaDeSeguridad.porDefecto());
+    }
+
+    public RestauranteHttpServer(int port, RestauranteController controller,
+                                 FabricaDeSeguridad seguridad) {
         this.port = port;
         this.controller = controller;
+        this.servicioDeAutenticacion = seguridad.getServicioDeAutenticacion();
         this.platoController = new PlatoController(new PlatoRepository(), controller.getRepository());
+        // Comparte el MISMO repositorio que usa el login: un propietario creado
+        // por este endpoint puede autenticarse enseguida.
+        this.propietarioController = new PropietarioController(
+                new PropietarioService(seguridad.getPropietarioRepository()),
+                seguridad.getPoliticaDeAutorizacion());
     }
 
     public int start() throws IOException {
         server = HttpServer.create(new InetSocketAddress(port), 0);
+        // Unica ruta publica del Sprint 1.
+        server.createContext("/auth/login", new AutenticacionHandler(servicioDeAutenticacion));
+        // Rutas protegidas: exigen Authorization: Bearer <token>.
+        server.createContext("/propietarios", this::handleCreatePropietario);
         server.createContext("/restaurantes", this::handleCreateRestaurant);
         server.createContext("/platos", this::handlePlatos);
         server.setExecutor(null);
@@ -48,6 +74,54 @@ public class RestauranteHttpServer {
         }
     }
 
+    /** HU-01 sobre HTTP, protegido por HU-05: solo ADMINISTRADOR. */
+    private void handleCreatePropietario(HttpExchange exchange) throws IOException {
+        try {
+            if (!"POST".equals(exchange.getRequestMethod())) {
+                sendJson(exchange, 405, "{\"success\":false,\"message\":\"Metodo no permitido\"}");
+                return;
+            }
+
+            String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+            RolAutenticado usuario = autenticado(exchange);
+
+            PropietarioResponseDTO response =
+                    propietarioController.crearPropietario(parsePropietarioJson(body), usuario);
+            sendJson(exchange, 201, toJson(response));
+        } catch (CredencialesInvalidasException ex) {
+            sendJson(exchange, 401, jsonError(ex.getMessage()));
+        } catch (SecurityException ex) {
+            sendJson(exchange, 403, jsonError(ex.getMessage()));
+        } catch (Exception ex) {
+            sendJson(exchange, 400, jsonError(ex.getMessage()));
+        }
+    }
+
+    private PropietarioRequestDTO parsePropietarioJson(String body) {
+        Map<String, String> values = parseValues(body);
+        PropietarioRequestDTO dto = new PropietarioRequestDTO();
+        dto.setNombre(values.get("nombre"));
+        dto.setApellido(values.get("apellido"));
+        dto.setDocumentoDeIdentidad(values.get("documentoDeIdentidad"));
+        dto.setCelular(values.get("celular"));
+        dto.setFechaNacimiento(values.get("fechaNacimiento"));
+        dto.setCorreo(values.get("correo"));
+        dto.setClave(values.get("clave"));
+        return dto;
+    }
+
+    private String toJson(PropietarioResponseDTO response) {
+        return "{\"success\":" + response.isSuccess()
+                + ",\"message\":\"" + response.getMessage() + "\",\"propietario\":{"
+                + "\"id\":" + response.getId() + ","
+                + "\"nombre\":\"" + response.getNombre() + "\","
+                + "\"apellido\":\"" + response.getApellido() + "\","
+                + "\"documentoDeIdentidad\":\"" + response.getDocumentoDeIdentidad() + "\","
+                + "\"celular\":\"" + response.getCelular() + "\","
+                + "\"correo\":\"" + response.getCorreo() + "\","
+                + "\"rol\":\"" + response.getRol() + "\"}}";
+    }
+
     private void handleCreateRestaurant(HttpExchange exchange) throws IOException {
         try {
             if (!"POST".equals(exchange.getRequestMethod())) {
@@ -56,17 +130,13 @@ public class RestauranteHttpServer {
             }
 
             String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
-            String roleHeader = exchange.getRequestHeaders().getFirst("X-Rol");
-            String rol = roleHeader == null ? null : roleHeader.trim();
-
-            if (rol == null || rol.isBlank()) {
-                sendJson(exchange, 401, "{\"success\":false,\"message\":\"No autenticado\"}");
-                return;
-            }
+            RolAutenticado usuario = autenticado(exchange);
 
             RestauranteRequestDTO request = parseRestaurantJson(body);
-            RestauranteResponseDTO response = controller.crearRestaurante(request, autenticado(exchange, rol));
+            RestauranteResponseDTO response = controller.crearRestaurante(request, usuario);
             sendJson(exchange, 201, toJson(response));
+        } catch (CredencialesInvalidasException ex) {
+            sendJson(exchange, 401, jsonError(ex.getMessage()));
         } catch (SecurityException ex) {
             sendJson(exchange, 403, "{\"success\":false,\"message\":\"" + ex.getMessage() + "\"}");
         } catch (Exception ex) {
@@ -76,14 +146,7 @@ public class RestauranteHttpServer {
 
     private void handlePlatos(HttpExchange exchange) throws IOException {
         try {
-            String roleHeader = exchange.getRequestHeaders().getFirst("X-Rol");
-            String rol = roleHeader == null ? null : roleHeader.trim();
-            if (rol == null || rol.isBlank()) {
-                sendJson(exchange, 401, "{\"success\":false,\"message\":\"No autenticado\"}");
-                return;
-            }
-
-            RolAutenticado usuario = autenticado(exchange, rol);
+            RolAutenticado usuario = autenticado(exchange);
             String path = exchange.getRequestURI().getPath();
             String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
             if ("POST".equals(exchange.getRequestMethod()) && "/platos".equals(path)) {
@@ -101,6 +164,8 @@ public class RestauranteHttpServer {
             }
 
             sendJson(exchange, 405, "{\"success\":false,\"message\":\"Metodo no permitido\"}");
+        } catch (CredencialesInvalidasException ex) {
+            sendJson(exchange, 401, jsonError(ex.getMessage()));
         } catch (SecurityException ex) {
             sendJson(exchange, 403, jsonError(ex.getMessage()));
         } catch (Exception ex) {
@@ -108,10 +173,14 @@ public class RestauranteHttpServer {
         }
     }
 
-    private RolAutenticado autenticado(HttpExchange exchange, String rol) {
-        String idHeader = exchange.getRequestHeaders().getFirst("X-User-Id");
-        Long idUsuario = idHeader == null || idHeader.isBlank() ? 10L : Long.valueOf(idHeader);
-        return new RolAutenticado(idUsuario, rol);
+    /**
+     * HU-05. Antes esto leia X-Rol y X-User-Id directamente de la peticion, asi
+     * que cualquier cliente podia declararse ADMINISTRADOR. Ahora la identidad
+     * sale de un token firmado: si el cliente lo altera, la firma no coincide.
+     */
+    private RolAutenticado autenticado(HttpExchange exchange) {
+        return servicioDeAutenticacion.autenticar(
+                exchange.getRequestHeaders().getFirst("Authorization"));
     }
 
     private RestauranteRequestDTO parseRestaurantJson(String body) {
