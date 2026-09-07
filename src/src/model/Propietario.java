@@ -3,6 +3,7 @@ import java.time.LocalDate;
 
 // Guarda los datos del propietario (solo datos, no valida nada)
 public class Propietario {
+    private Long id; // HU-05: lo asigna el repositorio al guardar; el token lo necesita
     private String nombre;
     private String apellido;
     private String documentoDeIdentidad; // es String para que no se pierdan ceros como 00123
@@ -24,6 +25,8 @@ public class Propietario {
         this.rol = "PROPIETARIO";
     }
 
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; } // Solo lo usa el repositorio
     public String getNombre() { return nombre; }
     public String getApellido() { return apellido; }
     public String getDocumentoDeIdentidad() { return documentoDeIdentidad; }
