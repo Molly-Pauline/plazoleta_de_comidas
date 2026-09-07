@@ -1,49 +1,57 @@
-import model.Propietario;
-import model.Restaurante;
-import repository.PropietarioRepository;
-import repository.RestauranteRepository;
-import service.PropietarioService;
-import service.RestauranteService;
-import service.UsuarioValidationPort;
+import config.FabricaDeSeguridad;
+import controller.RestauranteController;
+import http.RestauranteHttpServer;
 
-import java.time.LocalDate;
-
+/**
+ * Punto de entrada de la aplicacion — Sprint 1.
+ *
+ * Arranca el servidor HTTP con las rutas del sprint:
+ *
+ *   POST /auth/login     publica
+ *   POST /propietarios   solo ADMINISTRADOR        (HU-01)
+ *   POST /restaurantes   solo ADMINISTRADOR        (HU-02)
+ *   POST /platos         solo PROPIETARIO duenio   (HU-03)
+ *   PUT  /platos/{id}    solo PROPIETARIO duenio   (HU-04)
+ *
+ * Variables de entorno (ninguna se versiona; ver .env.example):
+ *   AUTH_SECRET    firma del token, minimo 16 caracteres
+ *   ADMIN_CORREO   correo del administrador inicial
+ *   ADMIN_CLAVE    su clave; si falta, se genera una y se imprime
+ *   PORT           puerto, por defecto 8080
+ */
 public class Main {
-    public static void main(String[] args) {
-        PropietarioRepository propietarioRepository = new PropietarioRepository();
-        PropietarioService propietarioService = new PropietarioService(propietarioRepository);
 
-        Propietario propietario = new Propietario(
-                "Ana",
-                "García",
-                "12345678",
-                "+573001112233",
-                LocalDate.of(1990, 5, 20),
-                "ana@correo.com",
-                "ClaveSegura123"
-        );
+    public static void main(String[] args) throws Exception {
+        int puerto = Integer.parseInt(
+                System.getenv().getOrDefault("PORT", "8080"));
 
-        try {
-            Propietario creado = propietarioService.crearPropietario(propietario, "ADMINISTRADOR");
-            System.out.println("Propietario creado: " + creado);
+        // Siembra el ADMINISTRADOR: el enunciado dice que ya existe en el
+        // sistema, asi que no lo crea HU-01.
+        FabricaDeSeguridad seguridad = FabricaDeSeguridad.porDefecto();
 
-            RestauranteRepository restauranteRepository = new RestauranteRepository();
-            UsuarioValidationPort usuarioValidationPort = idPropietario -> idPropietario.equals(1L) || idPropietario.equals(12345678L);
-            RestauranteService restauranteService = new RestauranteService(restauranteRepository, usuarioValidationPort);
+        RestauranteHttpServer servidor =
+                new RestauranteHttpServer(puerto, new RestauranteController(), seguridad);
+        int puertoReal = servidor.start();
 
-            Restaurante restaurante = new Restaurante(
-                    "La Casona",
-                    "123456789",
-                    "Calle 123 #45-67",
-                    "+573001234567",
-                    "https://example.com/logo.png",
-                    12345678L
-            );
+        System.out.println();
+        System.out.println("===========================================================");
+        System.out.println("  Plazoleta de Comidas - Sprint 1");
+        System.out.println("  Servidor escuchando en http://localhost:" + puertoReal);
+        System.out.println("===========================================================");
+        System.out.println("  POST /auth/login      publica");
+        System.out.println("  POST /propietarios    ADMINISTRADOR        [HU-01]");
+        System.out.println("  POST /restaurantes    ADMINISTRADOR        [HU-02]");
+        System.out.println("  POST /platos          PROPIETARIO duenio   [HU-03]");
+        System.out.println("  PUT  /platos/{id}     PROPIETARIO duenio   [HU-04]");
+        System.out.println("===========================================================");
+        System.out.println("  Ctrl+C para detener.");
+        System.out.println();
 
-            Restaurante guardado = restauranteService.crearRestaurante(restaurante, "ADMINISTRADOR");
-            System.out.println("Restaurante creado: " + guardado.getNombre() + " - NIT: " + guardado.getNit());
-        } catch (Exception e) {
-            System.err.println("No se pudo completar la operación: " + e.getMessage());
-        }
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            System.out.println("\nDeteniendo el servidor...");
+            servidor.stop();
+        }));
+
+        Thread.currentThread().join();
     }
 }
