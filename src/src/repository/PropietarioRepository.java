@@ -3,14 +3,24 @@ import model.Propietario;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicLong;
 
 // Guarda propietarios en memoria (solo guarda, no valida)
 public class PropietarioRepository {
     private List<Propietario> propietarios = new ArrayList<>();
+    // HU-05: el id empieza en 2 porque el 1 queda reservado al ADMINISTRADOR sembrado.
+    private final AtomicLong secuencia = new AtomicLong(1);
 
     public Propietario save(Propietario p) {
+        if (p.getId() == null) {
+            p.setId(secuencia.incrementAndGet());
+        }
         propietarios.add(p);
         return p;
+    }
+
+    public Optional<Propietario> findById(Long id) {
+        return propietarios.stream().filter(x -> id != null && id.equals(x.getId())).findFirst();
     }
 
     public Optional<Propietario> findByCorreo(String correo) {
