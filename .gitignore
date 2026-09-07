@@ -1,5 +1,18 @@
+# Compilacion
 target/
-.idea/workspace.xml
-.idea/**/shelf/
-*.iml
+out/
+build/
 *.class
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+
+# Entorno y secretos (checklist de PR: "sin secretos")
+.env
+.env.*
+!.env.example
+*.pem
+*.key
