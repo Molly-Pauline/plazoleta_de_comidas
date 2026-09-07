@@ -6,36 +6,41 @@ Responsable: Molly Lecompte (Scrum Master) · Documento maestro, secciones 7.2 y
 
 | Rama | Estado | Observacion |
 | --- | --- | --- |
-| `main` | | Solo recibe `release/sprint-1` |
-| `develop` | | Integracion de las cinco HU |
-| `feature/HU-01-crear-propietario` | | Renombrada: nacio sin el prefijo `feature/` |
-| `feature/HU-02-crear-restaurante` | | |
-| `feature/HU-03-crear-plato` | | Rehecha desde `develop`: colgaba de HU-02 |
-| `feature/HU-04-modificar-plato` | | Rehecha desde `develop`: colgaba de HU-03 |
-| `feature/HU-05-autenticacion` | | |
-| `release/sprint-1` | | |
+| `main` | Activa | Solo recibe `release/sprint-1` |
+| `develop` | Activa | Integracion de las cinco HU |
+| `feature/HU-01-crear-propietario` | Completada | Renombrada: nacio sin el prefijo `feature/` |
+| `feature/HU-02-crear-restaurante` | Completada | Integrada mediante PR a `develop` |
+| `feature/HU-03-crear-plato` | Completada | Rehecha desde `develop`: colgaba de HU-02 |
+| `feature/HU-04-modificar-plato` | Completada | Rehecha desde `develop`: colgaba de HU-03 |
+| `feature/HU-05-autenticacion` | En proceso | Implementacion de autenticacion y autorizacion |
+| `release/sprint-1` | Pendiente | Se crea al finalizar todas las integraciones |
+
 
 ## 2. Pull Requests
 
 | PR | HU | Autor | Revisor | Estado |
 | --- | --- | --- | --- | --- |
-| #1 | HU-01 | | | |
-| #2 | HU-02 | | | |
-| #3 | HU-03 | | | |
-| #4 | HU-04 | | | |
-| #5 | HU-05 | | | |
-| #6 | release | | | |
+| #1 | HU-01 | Molly-Pauline | Simón | Merged |
+| #5 | HU-02 | ardilamelina8-blip | Molly Lecompte | Merged |
+| #6 | HU-03 | ardilamelina8-blip | Simón | Merged |
+| #7 | HU-04 | ardilamelina8-blip | Molly Lecompte | Merged |
+| #9 | Gobernanza Git | Molly-Pauline | Simón | Open |
+| #8 | Modelo Relacional | ardilamelina8-blip | Molly Lecompte | Merged |
+| #10 | HU-05 | simon-svg294 | Melina | Merged |
+| #11| Arquitectura y Reporte Git | Molly-Pauline | Simón | Merged |
+| #12 | Release Sprint 1 | Molly-Pauline | Simón y Melina | Merged |
+
 
 ## 3. Checklist por integrante
 
 | Control | Molly | Simon | Melina |
 | --- | --- | --- | --- |
-| Mensajes normalizados | | | |
-| Sin cambios directos a `main` | | | |
-| PR asociado a HU | | | |
-| Revision cruzada | | | |
-| Documentacion versionada | | | |
-| 3 commits semanales en dias distintos | | | |
+| Mensajes normalizados | ✅ | ✅ | ✅ |
+| Sin cambios directos a `main` | ✅ | ✅ | ✅ |
+| PR asociado a HU | ✅ | ✅ | ✅ |
+| Revision cruzada | ✅ | ✅ | ✅ |
+| Documentacion versionada | ✅ | ✅ | ✅ |
+| 3 commits semanales en dias distintos |  |  |  |
 
 ## 4. Incidencias detectadas y correcciones
 
@@ -67,5 +72,15 @@ accion correctiva para el Sprint 2:
 
 La salida de John Lopez a mitad de sprint dejo HU-03 y HU-04 sin su responsable
 original. Impacto: reasignacion de carga y perdida del reparto previsto en la
-matriz de responsabilidades. Accion para el Sprint 2: definir un segundo
-conocedor por modulo desde el Planning.
+matriz de responsabilidades.
+
+Reasignacion realizada:
+
+- HU-02: Melina
+- HU-03: Melina
+- HU-04: Melina
+- HU-05: Simón
+- Gobernanza, documentacion, release y control Git: Molly
+
+Accion para el Sprint 2: definir un segundo conocedor por modulo desde el
+Planning.
