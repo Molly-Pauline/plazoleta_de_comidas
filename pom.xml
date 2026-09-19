@@ -12,7 +12,7 @@
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <junit.jupiter.version>5.10.2</junit.jupiter.version>
-        <project.build.sourceDirectory>${project.basedir}/src/src</project.build.sourceDirectory>
+        <project.build.sourceDirectory>${project.basedir}/src</project.build.sourceDirectory>
         <project.build.testSourceDirectory>${project.basedir}/src/test/java</project.build.testSourceDirectory>
     </properties>
 
@@ -36,6 +36,9 @@
                 <configuration>
                     <source>${maven.compiler.source}</source>
                     <target>${maven.compiler.target}</target>
+                    <excludes>
+                        <exclude>test/**</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
             <plugin>
