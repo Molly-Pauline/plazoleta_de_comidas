@@ -1,0 +1,114 @@
+{
+  "info": {
+    "name": "Plazoleta API",
+    "description": "Requests para HU2-HU4 y HU7-HU12. Obtén el token en Usuarios e inclúyelo como variable token.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "token", "value": "" },
+    { "key": "idRestaurante", "value": "1" },
+    { "key": "idPlato", "value": "1" },
+    { "key": "idPropietario", "value": "1" },
+    { "key": "idCliente", "value": "1" }
+  ],
+  "item": [
+    {
+      "name": "Salud",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/actuator/health"
+      }
+    },
+    {
+      "name": "HU2 - Crear restaurante",
+      "request": {
+        "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"La Casona\",\n  \"nit\": \"123456789\",\n  \"direccion\": \"Calle 123 #45-67\",\n  \"telefono\": \"+573001234567\",\n  \"urlLogo\": \"https://example.com/logo.png\",\n  \"idPropietario\": {{idPropietario}}\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": "{{baseUrl}}/restaurantes"
+      }
+    },
+    {
+      "name": "HU3 - Crear plato",
+      "request": {
+        "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Hamburguesa clasica\",\n  \"precio\": 25000,\n  \"descripcion\": \"Con queso\",\n  \"urlImagen\": \"https://example.com/burger.png\",\n  \"categoria\": \"Hamburguesas\",\n  \"idRestaurante\": {{idRestaurante}}\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": "{{baseUrl}}/platos"
+      }
+    },
+    {
+      "name": "HU4 - Modificar plato propio",
+      "request": {
+        "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"precio\": 30000,\n  \"descripcion\": \"Con queso y tocineta\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": "{{baseUrl}}/platos/{{idPlato}}"
+      }
+    },
+    {
+      "name": "HU7 - Habilitar o deshabilitar plato",
+      "request": {
+        "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+        "method": "PATCH",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"activo\": false\n}", "options": { "raw": { "language": "json" } } },
+        "url": "{{baseUrl}}/platos/{{idPlato}}/estado"
+      }
+    },
+    {
+      "name": "HU9 - Listar restaurantes paginados",
+      "request": {
+        "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+        "method": "GET",
+        "url": "{{baseUrl}}/restaurantes?page=0&size=10"
+      }
+    },
+    {
+      "name": "HU10 - Listar menu por categoria",
+      "request": {
+        "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+        "method": "GET",
+        "url": "{{baseUrl}}/restaurantes/{{idRestaurante}}/platos?page=0&size=10&categoria=Hamburguesas"
+      }
+    },
+    {
+      "name": "HU11 - Crear pedido",
+      "request": {
+        "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idRestaurante\": {{idRestaurante}},\n  \"platos\": [\n    { \"idPlato\": {{idPlato}}, \"cantidad\": 2 }\n  ]\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": "{{baseUrl}}/pedidos"
+      }
+    },
+    {
+      "name": "HU12 - Listar pedidos por estado (empleado)",
+      "request": {
+        "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+        "method": "GET",
+        "url": "{{baseUrl}}/pedidos?estado=PENDIENTE&page=0&size=10"
+      }
+    }
+  ]
+}
